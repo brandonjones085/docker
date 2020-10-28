@@ -1,0 +1,63 @@
+
+def projectName = '<project-name>'
+
+pipeline {
+  environment {
+    DOCKER = credentials("docker")
+  }
+  agent {
+    kubernetes {
+      label 'app'
+      defaultContainer 'jnlp'
+      yaml """
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            labels:
+              component: ci
+          spec:
+            serviceAccount: jenkins
+            containers:
+              - name: node
+                image: signiant/docker-jenkins-nodejs  
+                command:
+                  - cat
+                tty: true
+              - name: docker
+                image: gcr.io/cloud-builders/docker
+                command:
+                  - cat
+                tty: true
+                volumeMounts:
+                  - name: dockersock
+                    mountPath: /var/run/docker.sock
+            volumes:
+            - name: dockersock
+              hostPath:
+                path: /var/run/docker.sock
+        """
+    }
+  }
+  stages {
+    stage('Test') {
+      steps {
+        container('node') {
+          sh("yarn install")
+          sh("yarn test")
+          sh("yarn buildprod")
+          junit 'src/test-results/**/*.xml'
+          cobertura autoUpdateHealth: false, autoUpdateStability: false, coberturaReportFile: '**/cobertura.xml', conditionalCoverageTargets: '70, 0, 0', failUnhealthy: false, failUnstable: false, lineCoverageTargets: '80, 0, 0', maxNumberOfBuilds: 0, methodCoverageTargets: '80, 0, 0', onlyStable: false, sourceEncoding: 'ASCII', zoomCoverageChart: false
+        }
+      }
+    }
+    stage('Build') {
+      steps {
+        container('docker') {
+          sh("docker login -u $DOCKER_USR -p $DOCKER_PSW")
+          sh("docker build -t $DOCKER_USR/${projectName} .")
+          sh("docker push $DOCKER_USR/${projectName}")
+        }
+      }
+    }
+  }
+}
