@@ -2,6 +2,11 @@ pipeline {
     agent any
 
     stages {
+      stage('Clone repository') {
+        /* Let's make sure we have the repository cloned to our workspace */
+
+        checkout scm
+      }
         stage('Install') {
             steps {
               sh '''
@@ -16,7 +21,7 @@ pipeline {
                 echo 'Testing..'
             }
         }
-        
+
         stage('Build') {
             steps {
               sh '$(npm bin)/ng build --prod --build-optimizer'
