@@ -11,7 +11,7 @@ node {
         /* This builds the actual image; synonymous to
          * docker build on the command line */
 
-        app = docker.build("getintodevops/hellonode")
+       sh sudo docker build -t getintodevops/hellonode .
     }
 
     stage('Test image') {
