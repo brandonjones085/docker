@@ -2,9 +2,13 @@ pipeline {
     agent any
 
     stages {
-        stage('Build') {
+        stage('Install') {
             steps {
-                echo 'Building..'
+              sh '''
+                npm install --verbose -d 
+                npm install --save classlist.js
+                '''
+                
             }
         }
         stage('Test') {
@@ -12,6 +16,14 @@ pipeline {
                 echo 'Testing..'
             }
         }
+        
+        stage('Build') {
+            steps {
+              sh '$(npm bin)/ng build --prod --build-optimizer'
+                
+            }
+        }
+        
         stage('Deploy') {
             steps {
                 echo 'Deploying....'
