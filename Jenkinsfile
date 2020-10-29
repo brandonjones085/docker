@@ -7,13 +7,9 @@ pipeline {
 
         checkout scm
       }
-        stage('Install') {
+        stage('build') {
             steps {
-              sh '''
-                npm install --verbose -d 
-                npm install --save classlist.js
-                '''
-                
+              app = docker.build("getintodevops/hellonode")
             }
         }
         stage('Test') {
@@ -22,12 +18,7 @@ pipeline {
             }
         }
 
-        stage('Build') {
-            steps {
-              sh '$(npm bin)/ng build --prod --build-optimizer'
-                
-            }
-        }
+
         
         stage('Deploy') {
             steps {
