@@ -17,8 +17,8 @@ node {
   
          /* Placeholder for unit tests*/
         app.inside {
-          passed"'
-        }   sh 'echo "Tests
+          sh 'echo "Tests passed"'
+        }   
     }
 
     stage('Push image') {
